@@ -4,12 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A single-file HTML application for browsing Andrew's Logic Pro plugin collection (72 plugins). The tool helps him quickly find plugins, learn about ones he hasn't explored, and track which manuals he's read.
+A single-file HTML application for browsing Andrew's Logic Pro plugin collection (70 plugins, after removing 2 unowned plugins). The tool helps him quickly find plugins, learn about ones he hasn't explored, and track which manuals he's read.
 
 **Current State:**
-- Interface complete with filtering, search, detail panels, and variant grouping
-- Research status: Skeleton data only - descriptions, use cases, and manual links need to be added
-- Two plugins pending removal: `plugin-alliance-ampeg-v4b` and `plugin-alliance-schoeps-double-ms`
+- Interface complete with filtering (custom CSS dropdowns), search, detail panels, and variant grouping
+- Research status: **23/70 plugins researched** (32%) with complete descriptions, use cases, and "things to try"
+- All researched plugins are Universal Audio plugins
+- Remaining: 47 plugins (Plugin Alliance, Softube, IK Multimedia, and others)
 
 ## Architecture
 
@@ -26,9 +27,15 @@ A single-file HTML application for browsing Andrew's Logic Pro plugin collection
 - `hasChanges`: Tracks unsaved modifications (manual read status)
 
 **UI sections:**
-- Sidebar (lines 37-109): Filters and save button
-- Main grid (lines 114-121): Card-based plugin display
-- Detail panel (lines 124-187): Expandable right-side plugin details
+- Sidebar (lines 117-200): Filters (custom dropdowns) and save button
+- Main grid (lines 205-213): Card-based plugin display
+- Detail panel (lines 216-279): Expandable right-side plugin details
+
+**Custom Dropdowns:** The app uses custom CSS-styled dropdowns (not native `<select>` elements) with:
+- Square corners (border-radius: 4px)
+- Custom animations and hover states
+- Click-outside-to-close behavior
+- State managed in `customSelects` object
 
 ## Plugin Data Schema
 
@@ -136,3 +143,40 @@ MAINTENANCE.md contains manual URLs organized by vendor:
 - Uses Tailwind CDN (no local CSS compilation)
 - File protocol compatible (no server required)
 - All state is client-side, changes only persist via JSON download
+
+## Workflow: Research & Data Integration
+
+**IMPORTANT:** There are two separate workflows documented in `RESEARCH_WORKFLOW.md`:
+
+1. **Claude.ai (Web)**: Research only
+   - Searches for manuals and product pages
+   - Extracts descriptions, use cases, and "things to try"
+   - Outputs JSON formatted plugin data
+   - Does NOT touch the HTML file
+
+2. **Claude Code (Local)**: Data integration
+   - Merges new research JSON into existing HTML
+   - Preserves CSS changes and checkbox state
+   - Edits `PLUGIN_DATA` in place using regex replacement
+   - NEVER regenerates the entire HTML file
+
+### Critical Rules for Updating Plugin Data
+
+**When merging new plugin research:**
+
+1. Read the current HTML file
+2. Extract `PLUGIN_DATA` using regex: `const PLUGIN_DATA = (\{.+?\});`
+3. Parse it as JSON
+4. Merge new plugin data (descriptions, URLs, use cases, things to try)
+5. Preserve `manualRead` checkbox state for all plugins
+6. Convert updated data to compact JSON
+7. Replace ONLY the `PLUGIN_DATA` object using regex substitution
+8. Write the file back (preserves all CSS and HTML)
+
+**What NOT to do:**
+- Don't regenerate the entire HTML
+- Don't lose the custom CSS dropdown styling
+- Don't reset `manualRead` checkbox states
+- Don't use native `<select>` elements (use custom dropdowns)
+
+See `RESEARCH_WORKFLOW.md` for complete merge scripts and quality standards.
