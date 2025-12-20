@@ -1,10 +1,10 @@
 {
   "description": "Plugins that still need research. Claude Web can reference this file to know what to work on.",
-  "lastUpdated": "2024-12-19",
+  "lastUpdated": "2025-12-20",
   "stats": {
     "total": 70,
-    "researched": 23,
-    "remaining": 47
+    "researched": 29,
+    "remaining": 41
   },
   "plugins": [
     {
@@ -12,14 +12,6 @@
       "name": "Analog Lab V",
       "vendor": "Arturia",
       "category": "multi-instrument",
-      "manualUrl": null,
-      "productUrl": null
-    },
-    {
-      "id": "bertom-denoiser-classic",
-      "name": "Denoiser Classic",
-      "vendor": "Bertom",
-      "category": "noise-reduction",
       "manualUrl": null,
       "productUrl": null
     },
@@ -104,14 +96,6 @@
       "productUrl": null
     },
     {
-      "id": "ik-tonex",
-      "name": "TONEX",
-      "vendor": "IK Multimedia",
-      "category": "amp-sim",
-      "manualUrl": null,
-      "productUrl": null
-    },
-    {
       "id": "ik-tr5-metering",
       "name": "TR5 Metering",
       "vendor": "IK Multimedia",
@@ -192,14 +176,6 @@
       "productUrl": null
     },
     {
-      "id": "plugin-alliance-bx-solo",
-      "name": "bx_solo",
-      "vendor": "Plugin Alliance",
-      "category": "utility",
-      "manualUrl": "https://www.plugin-alliance.com/media/bx_solo_Manual.pdf",
-      "productUrl": null
-    },
-    {
       "id": "plugin-alliance-bx-subfilter",
       "name": "bx_subfilter",
       "vendor": "Plugin Alliance",
@@ -248,14 +224,6 @@
       "productUrl": null
     },
     {
-      "id": "relab-lx480-essentials",
-      "name": "LX480 Essentials",
-      "vendor": "Relab Development",
-      "category": "reverb",
-      "manualUrl": "https://www.plugin-alliance.com/media/LX480_Essentials_Manual.pdf",
-      "productUrl": null
-    },
-    {
       "id": "rhodes-v-pan",
       "name": "V-Pan",
       "vendor": "Rhodes",
@@ -278,14 +246,6 @@
       "category": "amp-sim",
       "manualUrl": null,
       "productUrl": "https://www.softube.com/index.php?id=plexiclassic"
-    },
-    {
-      "id": "softube-saturation-knob",
-      "name": "Saturation Knob",
-      "vendor": "Softube",
-      "category": "saturation",
-      "manualUrl": null,
-      "productUrl": "https://www.softube.com/index.php?id=satknob"
     },
     {
       "id": "softube-tsar-1r-reverb",
@@ -335,14 +295,6 @@
       "vendor": "Steven Slate",
       "category": "monitoring",
       "manualUrl": null,
-      "productUrl": null
-    },
-    {
-      "id": "tdr-nova",
-      "name": "TDR Nova",
-      "vendor": "Tokyo Dawn Labs",
-      "category": "eq",
-      "manualUrl": "https://docs.tokyodawn.net/nova-manual/",
       "productUrl": null
     },
     {
