@@ -79,6 +79,8 @@ The research JSON includes all fields:
 
 For new plugins, set `manualRead: false`. If it's a new category, add it to the `categories` object.
 
+After adding research, remove the plugin from `research-queue.json` (if present) and update the `stats` counts.
+
 ## UI Structure
 
 **Sidebar** (left):
