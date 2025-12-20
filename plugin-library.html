@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plugin Library</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              850: '#1a1f2e'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+    .plugin-card { transition: all 0.15s ease; }
+    .plugin-card:hover { transform: translateY(-2px); }
+    .tag { transition: all 0.1s ease; }
+    .detail-panel { transition: transform 0.2s ease, opacity 0.2s ease; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+  
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar Filters -->
+    <aside class="w-64 bg-slate-850 border-r border-slate-700 flex flex-col">
+      <div class="p-5 border-b border-slate-700">
+        <h1 class="text-xl font-bold text-white">Plugin Library</h1>
+        <p class="text-sm text-slate-400 mt-1"><span id="plugin-count">0</span> plugins</p>
+      </div>
+      
+      <!-- Search -->
+      <div class="p-4">
+        <input 
+          type="text" 
+          id="search" 
+          placeholder="Search plugins..." 
+          class="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 placeholder-slate-500"
+        >
+      </div>
+      
+      <!-- Filters -->
+      <div class="flex-1 overflow-y-auto scrollbar-thin p-4 space-y-6">
+        <!-- Vendor Filter -->
+        <div>
+          <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Vendor</h3>
+          <select id="vendor-filter" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+            <option value="">All Vendors</option>
+          </select>
+        </div>
+        
+        <!-- Category Filter -->
+        <div>
+          <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Category</h3>
+          <select id="category-filter" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+            <option value="">All Categories</option>
+          </select>
+        </div>
+        
+        <!-- Type Filter -->
+        <div>
+          <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Type</h3>
+          <select id="type-filter" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+            <option value="">All Types</option>
+          </select>
+        </div>
+        
+        <!-- Status Filter -->
+        <div>
+          <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Status</h3>
+          <div class="space-y-2">
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" id="show-incompatible" checked class="rounded bg-slate-700 border-slate-600 text-blue-500 focus:ring-blue-500 focus:ring-offset-0">
+              <span>Show incompatible</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" id="show-unread-only" class="rounded bg-slate-700 border-slate-600 text-blue-500 focus:ring-blue-500 focus:ring-offset-0">
+              <span>Unread manuals only</span>
+            </label>
+            <label class="flex items-center gap-2 text-sm cursor-pointer">
+              <input type="checkbox" id="show-researched-only" class="rounded bg-slate-700 border-slate-600 text-blue-500 focus:ring-blue-500 focus:ring-offset-0">
+              <span>Researched only</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Save Button -->
+      <div class="p-4 border-t border-slate-700">
+        <button 
+          id="save-btn"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors"
+        >
+          Save Changes
+        </button>
+        <p class="text-xs text-slate-500 mt-2 text-center">Downloads updated JSON</p>
+      </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="flex-1 flex overflow-hidden">
+      <!-- Plugin Grid -->
+      <div class="flex-1 overflow-y-auto scrollbar-thin p-6">
+        <div id="plugin-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <!-- Cards inserted here -->
+        </div>
+        <div id="no-results" class="hidden text-center py-12 text-slate-500">
+          No plugins match your filters
+        </div>
+      </div>
+      
+      <!-- Detail Panel -->
+      <div id="detail-panel" class="w-96 bg-slate-850 border-l border-slate-700 overflow-y-auto scrollbar-thin hidden">
+        <div class="p-6">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h2 id="detail-name" class="text-xl font-bold text-white"></h2>
+              <p id="detail-vendor" class="text-slate-400"></p>
+            </div>
+            <button id="close-detail" class="text-slate-500 hover:text-white p-1">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+          
+          <!-- Tags -->
+          <div id="detail-tags" class="flex flex-wrap gap-2 mb-6"></div>
+          
+          <!-- Compatibility Warning -->
+          <div id="detail-incompatible" class="hidden bg-amber-900/30 border border-amber-700 rounded-lg p-3 mb-6">
+            <p class="text-amber-200 text-sm">⚠️ Not compatible with Apple Silicon</p>
+          </div>
+          
+          <!-- Links -->
+          <div id="detail-links" class="space-y-2 mb-6"></div>
+          
+          <!-- Manual Read Status -->
+          <div id="detail-manual-section" class="mb-6 hidden">
+            <label class="flex items-center gap-3 cursor-pointer p-3 bg-slate-800 rounded-lg hover:bg-slate-750 transition-colors">
+              <input type="checkbox" id="detail-manual-read" class="rounded bg-slate-700 border-slate-600 text-green-500 focus:ring-green-500 focus:ring-offset-0 w-5 h-5">
+              <span class="text-sm">I've read the manual</span>
+            </label>
+          </div>
+          
+          <!-- Description -->
+          <div id="detail-description-section" class="mb-6 hidden">
+            <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Description</h3>
+            <p id="detail-description" class="text-sm text-slate-300 leading-relaxed"></p>
+          </div>
+          
+          <!-- Use Cases -->
+          <div id="detail-usecases-section" class="mb-6 hidden">
+            <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Common Use Cases</h3>
+            <ul id="detail-usecases" class="space-y-2"></ul>
+          </div>
+          
+          <!-- Things to Try -->
+          <div id="detail-totry-section" class="mb-6 hidden">
+            <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Things to Try</h3>
+            <ul id="detail-totry" class="space-y-2"></ul>
+          </div>
+          
+          <!-- Variant Info -->
+          <div id="detail-variants-section" class="mb-6 hidden">
+            <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Related Variants</h3>
+            <div id="detail-variants" class="space-y-2"></div>
+          </div>
+          
+          <!-- Notes -->
+          <div id="detail-notes-section" class="hidden">
+            <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Notes</h3>
+            <p id="detail-notes" class="text-sm text-slate-300"></p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Plugin data embedded directly to avoid CORS issues with file:// protocol
+    const PLUGIN_DATA = {"plugins":[{"id":"arturia-analog-lab-v","name":"Analog Lab V","vendor":"Arturia","type":"instrument","category":"multi-instrument","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"bertom-denoiser-classic","name":"Denoiser Classic","vendor":"Bertom","type":"effect","category":"noise-reduction","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"celemony-melodyne","name":"Melodyne","vendor":"Celemony","type":"MIDI-controlled effect","category":"pitch-correction","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"decidedly-decentsampler","name":"DecentSampler","vendor":"Decidedly","type":"instrument","category":"sampler","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"eventide-deboom","name":"DeBoom","vendor":"Eventide","type":"effect","category":"utility","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"eventide-sheen-machine","name":"Sheen Machine","vendor":"Eventide","type":"effect","category":"exciter","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"ik-amplitube-5","name":"AmpliTube 5","vendor":"IK Multimedia","type":"MIDI-controlled effect","category":"amp-sim","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"ik-mixbox","name":"MixBox","vendor":"IK Multimedia","type":"effect","category":"channel-strip","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"ik-modo-bass-2","name":"MODO BASS 2","vendor":"IK Multimedia","type":"instrument","category":"bass","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"ik-modo-drum","name":"MODO DRUM","vendor":"IK Multimedia","type":"instrument","category":"drums","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"ik-sampletank-4","name":"SampleTank 4","vendor":"IK Multimedia","type":"instrument","category":"multi-instrument","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"ik-syntronik-2","name":"Syntronik 2","vendor":"IK Multimedia","type":"instrument","category":"synthesizer","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"ik-tonex","name":"TONEX","vendor":"IK Multimedia","type":"effect","category":"amp-sim","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"ik-tr5-metering","name":"TR5 Metering","vendor":"IK Multimedia","type":"effect","category":"metering","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"ik-tr5-suite","name":"TR5 Suite","vendor":"IK Multimedia","type":"effect","category":"mixing-bundle","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"izotope-ozone-11-elements","name":"Ozone 11 Elements","vendor":"iZotope","type":"effect","category":"mastering","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"izotope-ozone-imager-2","name":"Ozone Imager 2","vendor":"iZotope","type":"effect","category":"stereo-imaging","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"plugin-alliance-ampeg-svtvr-classic","name":"Ampeg SVTVR Classic","vendor":"Plugin Alliance","type":"MIDI-controlled effect","category":"amp-sim","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"plugin-alliance-ampeg-v4b","name":"Ampeg V4B","vendor":"Plugin Alliance","type":"effect","category":"amp-sim","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"plugin-alliance-bx-cleansweep-v2","name":"bx_cleansweep V2","vendor":"Plugin Alliance","type":"effect","category":"filter","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"plugin-alliance-bx-console-n","name":"bx_console N","vendor":"Plugin Alliance","type":"MIDI-controlled effect","category":"channel-strip","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"plugin-alliance-bx-console-ssl-4000-e","name":"bx_console SSL 4000 E","vendor":"Plugin Alliance","type":"effect","category":"channel-strip","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"plugin-alliance-bx-masterdesk-classic","name":"bx_masterdesk Classic","vendor":"Plugin Alliance","type":"MIDI-controlled effect","category":"mastering","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"plugin-alliance-bx-rockrack-v3-player","name":"bx_rockrack V3 Player","vendor":"Plugin Alliance","type":"effect","category":"amp-sim","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"plugin-alliance-bx-solo","name":"bx_solo","vendor":"Plugin Alliance","type":"effect","category":"utility","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"plugin-alliance-bx-subfilter","name":"bx_subfilter","vendor":"Plugin Alliance","type":"effect","category":"filter","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"plugin-alliance-bx-townhouse-buss-compressor","name":"bx_townhouse Buss Compressor","vendor":"Plugin Alliance","type":"MIDI-controlled effect","category":"compressor","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"plugin-alliance-bx-tuner","name":"bx_tuner","vendor":"Plugin Alliance","type":"effect","category":"utility","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"plugin-alliance-elysia-niveau-filter","name":"elysia niveau filter","vendor":"Plugin Alliance","type":"effect","category":"eq","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"plugin-alliance-schoeps-double-ms","name":"Schoeps Double MS","vendor":"Plugin Alliance","type":"effect","category":"stereo-imaging","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"plugin-alliance-spl-free-ranger","name":"SPL Free Ranger","vendor":"Plugin Alliance","type":"effect","category":"eq","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"plugin-alliance-the-oven","name":"THE OVEN","vendor":"Plugin Alliance","type":"MIDI-controlled effect","category":"saturation","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"relab-lx480-essentials","name":"LX480 Essentials","vendor":"Relab Development","type":"effect","category":"reverb","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"rhodes-v-pan","name":"V-Pan","vendor":"Rhodes","type":"effect","category":"panning","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"softube-drawmer-s73","name":"Drawmer S73","vendor":"Softube","type":"effect","category":"compressor","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"softube-marshall-plexi-classic","name":"Marshall Plexi Classic","vendor":"Softube","type":"effect","category":"amp-sim","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"softube-saturation-knob","name":"Saturation Knob","vendor":"Softube","type":"effect","category":"saturation","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"softube-tsar-1r-reverb","name":"TSAR-1R Reverb","vendor":"Softube","type":"effect","category":"reverb","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"softube-tube-delay","name":"Tube Delay","vendor":"Softube","type":"effect","category":"delay","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"soundtoys-echoboy-jr","name":"EchoBoy Jr","vendor":"Soundtoys","type":"effect","category":"delay","compatible":false,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":"Not compatible with Apple Silicon"},{"id":"soundtoys-little-microshift","name":"Little MicroShift","vendor":"Soundtoys","type":"effect","category":"stereo-imaging","compatible":false,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":"Not compatible with Apple Silicon"},{"id":"soundtoys-little-radiator","name":"Little Radiator","vendor":"Soundtoys","type":"effect","category":"saturation","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"steven-slate-vsx","name":"VSX","vendor":"Steven Slate","type":"effect","category":"monitoring","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"tdr-nova","name":"TDR Nova","vendor":"Tokyo Dawn Labs","type":"effect","category":"eq","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"ujam-fin-retro","name":"FIN-RETRO","vendor":"UJAM","type":"effect","category":"creative-fx","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"ujam-usynth","name":"USYNTH","vendor":"UJAM","type":"instrument","category":"synthesizer","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"ujam-vb-dandy","name":"VB-DANDY","vendor":"UJAM","type":"instrument","category":"bass","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"ujam-vd-deep","name":"VD-DEEP","vendor":"UJAM","type":"instrument","category":"drums","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"uad-1176-rev-a","name":"1176 Rev A Compressor","vendor":"Universal Audio","type":"effect","category":"compressor","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"variantGroup":"1176","notes":null},{"id":"uad-1176ae","name":"1176AE Compressor","vendor":"Universal Audio","type":"effect","category":"compressor","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"variantGroup":"1176","notes":null},{"id":"uad-1176ln-rev-e","name":"1176LN Rev E Compressor","vendor":"Universal Audio","type":"effect","category":"compressor","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"variantGroup":"1176","notes":null},{"id":"uad-api-2500","name":"API 2500 Bus Compressor","vendor":"Universal Audio","type":"effect","category":"compressor","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"uad-brigade-chorus","name":"Brigade Chorus","vendor":"Universal Audio","type":"effect","category":"modulation","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"uad-century-tube-channel-strip","name":"Century Tube Channel Strip","vendor":"Universal Audio","type":"effect","category":"channel-strip","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"uad-electra-88","name":"Electra 88 Vintage Keys","vendor":"Universal Audio","type":"instrument","category":"keys","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"uad-galaxy-tape-echo","name":"Galaxy Tape Echo","vendor":"Universal Audio","type":"effect","category":"delay","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"uad-helios-type-69","name":"Helios Type 69 Preamp and EQ","vendor":"Universal Audio","type":"effect","category":"channel-strip","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"uad-la-2","name":"LA-2 Compressor","vendor":"Universal Audio","type":"effect","category":"compressor","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"variantGroup":"LA-2A","notes":null},{"id":"uad-la-2a-gray","name":"LA-2A Gray Compressor","vendor":"Universal Audio","type":"effect","category":"compressor","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"variantGroup":"LA-2A","notes":null},{"id":"uad-la-2a-silver","name":"LA-2A Silver Compressor","vendor":"Universal Audio","type":"effect","category":"compressor","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"variantGroup":"LA-2A","notes":null},{"id":"uad-moog-minimoog","name":"Moog Minimoog Synth","vendor":"Universal Audio","type":"instrument","category":"synthesizer","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"uad-opal-morphing-synth","name":"Opal Morphing Synth","vendor":"Universal Audio","type":"instrument","category":"synthesizer","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"uad-oxide-tape-recorder","name":"Oxide Tape Recorder","vendor":"Universal Audio","type":"effect","category":"tape","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"uad-polymax-synth","name":"PolyMAX Synth","vendor":"Universal Audio","type":"instrument","category":"synthesizer","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"uad-pultec-eqp-1a","name":"Pultec EQP-1A EQ","vendor":"Universal Audio","type":"effect","category":"eq","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"variantGroup":"Pultec","notes":null},{"id":"uad-pultec-hlf-3c","name":"Pultec HLF-3C EQ","vendor":"Universal Audio","type":"effect","category":"eq","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"variantGroup":"Pultec","notes":null},{"id":"uad-pultec-meq-5","name":"Pultec MEQ-5 EQ","vendor":"Universal Audio","type":"effect","category":"eq","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"variantGroup":"Pultec","notes":null},{"id":"uad-pure-plate-reverb","name":"Pure Plate Reverb","vendor":"Universal Audio","type":"effect","category":"reverb","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"uad-ravel-grand-piano","name":"Ravel Grand Piano","vendor":"Universal Audio","type":"instrument","category":"keys","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"uad-showtime-64","name":"Showtime 64 Tube Amp","vendor":"Universal Audio","type":"effect","category":"amp-sim","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"uad-studio-d-chorus","name":"Studio D Chorus","vendor":"Universal Audio","type":"effect","category":"modulation","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"uad-verve-analog-machines","name":"Verve Analog Machines Essentials","vendor":"Universal Audio","type":"effect","category":"saturation","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"uad-waterfall-b3-organ","name":"Waterfall B3 Organ","vendor":"Universal Audio","type":"instrument","category":"keys","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null},{"id":"uad-waterfall-rotary-speaker","name":"Waterfall Rotary Speaker","vendor":"Universal Audio","type":"MIDI-controlled effect","category":"modulation","compatible":true,"manualRead":false,"manualUrl":null,"productUrl":null,"description":null,"useCases":[],"thingsToTry":[],"notes":null}],"categories":{"amp-sim":"Amp Simulation","bass":"Bass","channel-strip":"Channel Strip","compressor":"Compressor","creative-fx":"Creative FX","delay":"Delay","drums":"Drums","eq":"EQ","exciter":"Exciter","filter":"Filter","keys":"Keys","mastering":"Mastering","metering":"Metering","mixing-bundle":"Mixing Bundle","modulation":"Modulation","monitoring":"Monitoring","multi-instrument":"Multi-Instrument","noise-reduction":"Noise Reduction","panning":"Panning","pitch-correction":"Pitch Correction","reverb":"Reverb","sampler":"Sampler","saturation":"Saturation","stereo-imaging":"Stereo Imaging","synthesizer":"Synthesizer","tape":"Tape","utility":"Utility"},"lastUpdated":"2024-12-18"};
+    
+    let pluginData = JSON.parse(JSON.stringify(PLUGIN_DATA));
+    let selectedPlugin = null;
+    let hasChanges = false;
+
+    // Category colors
+    const categoryColors = {
+      'compressor': 'bg-purple-900/50 text-purple-300 border-purple-700',
+      'eq': 'bg-blue-900/50 text-blue-300 border-blue-700',
+      'reverb': 'bg-cyan-900/50 text-cyan-300 border-cyan-700',
+      'delay': 'bg-teal-900/50 text-teal-300 border-teal-700',
+      'saturation': 'bg-orange-900/50 text-orange-300 border-orange-700',
+      'amp-sim': 'bg-red-900/50 text-red-300 border-red-700',
+      'modulation': 'bg-pink-900/50 text-pink-300 border-pink-700',
+      'synthesizer': 'bg-violet-900/50 text-violet-300 border-violet-700',
+      'keys': 'bg-indigo-900/50 text-indigo-300 border-indigo-700',
+      'drums': 'bg-amber-900/50 text-amber-300 border-amber-700',
+      'bass': 'bg-emerald-900/50 text-emerald-300 border-emerald-700',
+      'default': 'bg-slate-700/50 text-slate-300 border-slate-600'
+    };
+
+    function getCategoryColor(category) {
+      return categoryColors[category] || categoryColors.default;
+    }
+
+    function loadPlugins() {
+      // Data is already embedded, just initialize
+      initializeFilters();
+      renderPlugins();
+    }
+
+    function initializeFilters() {
+      const vendors = [...new Set(pluginData.plugins.map(p => p.vendor))].sort();
+      const categories = [...new Set(pluginData.plugins.map(p => p.category))].sort();
+      const types = [...new Set(pluginData.plugins.map(p => p.type))].sort();
+
+      const vendorSelect = document.getElementById('vendor-filter');
+      vendors.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = v;
+        vendorSelect.appendChild(opt);
+      });
+
+      const categorySelect = document.getElementById('category-filter');
+      categories.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = pluginData.categories[c] || c;
+        categorySelect.appendChild(opt);
+      });
+
+      const typeSelect = document.getElementById('type-filter');
+      types.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        opt.textContent = t;
+        typeSelect.appendChild(opt);
+      });
+    }
+
+    function getFilteredPlugins() {
+      const search = document.getElementById('search').value.toLowerCase();
+      const vendor = document.getElementById('vendor-filter').value;
+      const category = document.getElementById('category-filter').value;
+      const type = document.getElementById('type-filter').value;
+      const showIncompatible = document.getElementById('show-incompatible').checked;
+      const showUnreadOnly = document.getElementById('show-unread-only').checked;
+      const showResearchedOnly = document.getElementById('show-researched-only').checked;
+
+      return pluginData.plugins.filter(p => {
+        if (search && !p.name.toLowerCase().includes(search) && !p.vendor.toLowerCase().includes(search)) return false;
+        if (vendor && p.vendor !== vendor) return false;
+        if (category && p.category !== category) return false;
+        if (type && p.type !== type) return false;
+        if (!showIncompatible && !p.compatible) return false;
+        if (showUnreadOnly && p.manualRead) return false;
+        if (showResearchedOnly && !p.description) return false;
+        return true;
+      });
+    }
+
+    function renderPlugins() {
+      const filtered = getFilteredPlugins();
+      const grid = document.getElementById('plugin-grid');
+      const noResults = document.getElementById('no-results');
+
+      document.getElementById('plugin-count').textContent = filtered.length;
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        noResults.classList.remove('hidden');
+        return;
+      }
+
+      noResults.classList.add('hidden');
+      
+      grid.innerHTML = filtered.map(plugin => {
+        const hasResearch = plugin.description || plugin.useCases.length > 0;
+        const categoryLabel = pluginData.categories[plugin.category] || plugin.category;
+        const colorClass = getCategoryColor(plugin.category);
+        
+        return `
+          <div 
+            class="plugin-card bg-slate-800 rounded-xl p-4 cursor-pointer border border-slate-700 hover:border-slate-500 ${!plugin.compatible ? 'opacity-60' : ''} ${selectedPlugin?.id === plugin.id ? 'ring-2 ring-blue-500' : ''}"
+            data-id="${plugin.id}"
+          >
+            <div class="flex items-start justify-between mb-3">
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-white truncate">${plugin.name}</h3>
+                <p class="text-sm text-slate-400">${plugin.vendor}</p>
+              </div>
+              ${plugin.manualRead ? '<span class="text-green-400 text-lg" title="Manual read">✓</span>' : ''}
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="tag text-xs px-2 py-0.5 rounded-full border ${colorClass}">${categoryLabel}</span>
+              ${!plugin.compatible ? '<span class="tag text-xs px-2 py-0.5 rounded-full border bg-amber-900/50 text-amber-300 border-amber-700">Incompatible</span>' : ''}
+              ${hasResearch ? '<span class="tag text-xs px-2 py-0.5 rounded-full border bg-green-900/50 text-green-300 border-green-700">Researched</span>' : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Add click handlers
+      grid.querySelectorAll('.plugin-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const plugin = pluginData.plugins.find(p => p.id === card.dataset.id);
+          showDetail(plugin);
+        });
+      });
+    }
+
+    function showDetail(plugin) {
+      selectedPlugin = plugin;
+      const panel = document.getElementById('detail-panel');
+      panel.classList.remove('hidden');
+
+      document.getElementById('detail-name').textContent = plugin.name;
+      document.getElementById('detail-vendor').textContent = plugin.vendor;
+
+      // Tags
+      const categoryLabel = pluginData.categories[plugin.category] || plugin.category;
+      const colorClass = getCategoryColor(plugin.category);
+      document.getElementById('detail-tags').innerHTML = `
+        <span class="tag text-xs px-2 py-1 rounded-full border ${colorClass}">${categoryLabel}</span>
+        <span class="tag text-xs px-2 py-1 rounded-full border bg-slate-700/50 text-slate-300 border-slate-600">${plugin.type}</span>
+      `;
+
+      // Compatibility warning
+      const incompatibleEl = document.getElementById('detail-incompatible');
+      if (!plugin.compatible) {
+        incompatibleEl.classList.remove('hidden');
+      } else {
+        incompatibleEl.classList.add('hidden');
+      }
+
+      // Links
+      const linksEl = document.getElementById('detail-links');
+      let linksHtml = '';
+      if (plugin.productUrl) {
+        linksHtml += `<a href="${plugin.productUrl}" target="_blank" class="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          Product Page
+        </a>`;
+      }
+      if (plugin.manualUrl) {
+        linksHtml += `<a href="${plugin.manualUrl}" target="_blank" class="flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          Manual
+        </a>`;
+      }
+      if (!linksHtml) {
+        linksHtml = '<p class="text-sm text-slate-500 italic">No links available yet</p>';
+      }
+      linksEl.innerHTML = linksHtml;
+
+      // Manual read checkbox
+      const manualSection = document.getElementById('detail-manual-section');
+      const manualCheckbox = document.getElementById('detail-manual-read');
+      if (plugin.manualUrl) {
+        manualSection.classList.remove('hidden');
+        manualCheckbox.checked = plugin.manualRead;
+        manualCheckbox.onchange = () => {
+          plugin.manualRead = manualCheckbox.checked;
+          hasChanges = true;
+          renderPlugins();
+        };
+      } else {
+        manualSection.classList.add('hidden');
+      }
+
+      // Description
+      const descSection = document.getElementById('detail-description-section');
+      const descEl = document.getElementById('detail-description');
+      if (plugin.description) {
+        descSection.classList.remove('hidden');
+        descEl.textContent = plugin.description;
+      } else {
+        descSection.classList.add('hidden');
+      }
+
+      // Use Cases
+      const usecasesSection = document.getElementById('detail-usecases-section');
+      const usecasesEl = document.getElementById('detail-usecases');
+      if (plugin.useCases && plugin.useCases.length > 0) {
+        usecasesSection.classList.remove('hidden');
+        usecasesEl.innerHTML = plugin.useCases.map(uc => 
+          `<li class="text-sm text-slate-300 flex items-start gap-2">
+            <span class="text-blue-400 mt-1">•</span>
+            <span>${uc}</span>
+          </li>`
+        ).join('');
+      } else {
+        usecasesSection.classList.add('hidden');
+      }
+
+      // Things to Try
+      const totrySection = document.getElementById('detail-totry-section');
+      const totryEl = document.getElementById('detail-totry');
+      if (plugin.thingsToTry && plugin.thingsToTry.length > 0) {
+        totrySection.classList.remove('hidden');
+        totryEl.innerHTML = plugin.thingsToTry.map(item => 
+          `<li class="text-sm text-slate-300 flex items-start gap-2">
+            <span class="text-green-400 mt-1">→</span>
+            <span>${item}</span>
+          </li>`
+        ).join('');
+      } else {
+        totrySection.classList.add('hidden');
+      }
+
+      // Variants
+      const variantsSection = document.getElementById('detail-variants-section');
+      const variantsEl = document.getElementById('detail-variants');
+      if (plugin.variantGroup) {
+        const variants = pluginData.plugins.filter(p => 
+          p.variantGroup === plugin.variantGroup && p.id !== plugin.id
+        );
+        if (variants.length > 0) {
+          variantsSection.classList.remove('hidden');
+          variantsEl.innerHTML = variants.map(v => 
+            `<button class="w-full text-left p-2 bg-slate-800 rounded-lg hover:bg-slate-750 text-sm transition-colors variant-btn" data-id="${v.id}">
+              <span class="text-white">${v.name}</span>
+            </button>`
+          ).join('');
+          variantsEl.querySelectorAll('.variant-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const variant = pluginData.plugins.find(p => p.id === btn.dataset.id);
+              showDetail(variant);
+            });
+          });
+        } else {
+          variantsSection.classList.add('hidden');
+        }
+      } else {
+        variantsSection.classList.add('hidden');
+      }
+
+      // Notes
+      const notesSection = document.getElementById('detail-notes-section');
+      const notesEl = document.getElementById('detail-notes');
+      if (plugin.notes) {
+        notesSection.classList.remove('hidden');
+        notesEl.textContent = plugin.notes;
+      } else {
+        notesSection.classList.add('hidden');
+      }
+
+      // Re-render to show selection
+      renderPlugins();
+    }
+
+    function saveChanges() {
+      const dataStr = JSON.stringify(pluginData, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'plugins.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      hasChanges = false;
+    }
+
+    // Event listeners
+    document.getElementById('search').addEventListener('input', renderPlugins);
+    document.getElementById('vendor-filter').addEventListener('change', renderPlugins);
+    document.getElementById('category-filter').addEventListener('change', renderPlugins);
+    document.getElementById('type-filter').addEventListener('change', renderPlugins);
+    document.getElementById('show-incompatible').addEventListener('change', renderPlugins);
+    document.getElementById('show-unread-only').addEventListener('change', renderPlugins);
+    document.getElementById('show-researched-only').addEventListener('change', renderPlugins);
+    document.getElementById('save-btn').addEventListener('click', saveChanges);
+    document.getElementById('close-detail').addEventListener('click', () => {
+      selectedPlugin = null;
+      document.getElementById('detail-panel').classList.add('hidden');
+      renderPlugins();
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        selectedPlugin = null;
+        document.getElementById('detail-panel').classList.add('hidden');
+        renderPlugins();
+      }
+      if (e.key === '/' && e.target.tagName !== 'INPUT') {
+        e.preventDefault();
+        document.getElementById('search').focus();
+      }
+    });
+
+    // Warn before leaving with unsaved changes
+    window.addEventListener('beforeunload', (e) => {
+      if (hasChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
+
+    // Load on start
+    loadPlugins();
+  </script>
+</body>
+</html>
