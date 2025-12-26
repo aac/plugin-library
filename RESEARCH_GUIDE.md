@@ -30,7 +30,7 @@ Tailor "things to try" to his situation:
 ## Quality Standards
 
 ### Description
-Focus on **sonic character** and **what it sounds like**, not just what it does. Avoid marketing language.
+Be factual and specific. Include details about key features. Focus on **sonic character** and **what it sounds like**, not just what it does. Avoid marketing language.
 
 **AVOID these phrases:**
 - "Comes with...", "Includes...", "Access to..."
