@@ -30,16 +30,32 @@ Tailor "things to try" to his situation:
 ## Quality Standards
 
 ### Description
-Be factual and specific. Focus on character. Include details about key features.
+Focus on **sonic character** and **what it sounds like**, not just what it does. Avoid marketing language.
+
+**AVOID these phrases:**
+- "Comes with...", "Includes...", "Access to..."
+- "Revolutionary", "Ultimate", "Professional"
+- Feature counts ("1,250+ models", "40,000+ sounds")
+
+Describe the SOUND and CHARACTER, then mention key features that affect the tone.
 
 **Good:**
 > Emulation of BOSS CE-1 (1976) - world's first chorus pedal, originally built into Jazz Chorus amp. Uses bucket-brigade delay circuit for warm, organic modulation. Dual mode: Classic (gentle) and Dual (intense stereo).
 
+*Why it's good: Describes what it is, the sonic character (warm, organic), and the key feature (dual mode) that affects sound.*
+
 **Bad:**
 > A chorus effect plugin with various controls for modulation.
 
+*Why it's bad: Generic, could describe any chorus plugin.*
+
+**Also Bad:**
+> Revolutionary AI Machine Modeling technology for capturing the exact sound of any amp. Comes with 1,250+ Premium Tone Models plus access to 40,000+ free models on ToneNET community.
+
+*Why it's bad: Marketing language, feature count focus, doesn't describe what it SOUNDS like.*
+
 ### Use Cases
-Professional applications, not beginner tips.
+Balance **WHAT**, **WHEN**, and **WHY**. Describe professional applications with enough context to understand the scenario. Avoid generic descriptions that could apply to any similar plugin.
 
 **Good:**
 ```json
@@ -51,6 +67,8 @@ Professional applications, not beginner tips.
 ]
 ```
 
+*Why it's good: Specific applications with context (80s-style, subtle widening, etc.). You understand WHEN and WHY to use it.*
+
 **Bad:**
 ```json
 [
@@ -60,8 +78,21 @@ Professional applications, not beginner tips.
 ]
 ```
 
+*Why it's bad: Too generic, no context. Could apply to hundreds of plugins.*
+
+**Also Bad:**
+```json
+[
+  "Recording direct guitar with studio-quality amp simulation",
+  "Accessing thousands of professional amp tones instantly",
+  "Creating custom Tone Models of your own rig"
+]
+```
+
+*Why it's bad: Too generic (first one applies to ALL amp sims), feature descriptions (second/third), not actual use cases.*
+
 ### Things to Try
-Specific settings and techniques, referencing Andrew's influences where relevant.
+**Must be SPECIFIC and ACTIONABLE.** Include settings, modes, or signal chains. Reference Andrew's influences when relevant. Avoid vague suggestions or generic feature highlights.
 
 **Good:**
 ```json
@@ -73,6 +104,8 @@ Specific settings and techniques, referencing Andrew's influences where relevant
 ]
 ```
 
+*Why it's good: Specific modes/settings, concrete techniques, references influences.*
+
 **Bad:**
 ```json
 [
@@ -81,6 +114,19 @@ Specific settings and techniques, referencing Andrew's influences where relevant
   "Use it creatively"
 ]
 ```
+
+*Why it's bad: Vague, no specific guidance, could say this about any plugin.*
+
+**Also Bad:**
+```json
+[
+  "Browse ToneNET for user-created tones by searching your favorite artists",
+  "Use TONEX Modeler to capture your favorite pedal chain",
+  "Explore vintage and modern amp sounds without hardware"
+]
+```
+
+*Why it's bad: Feature descriptions, not techniques. "Browse the library" is not an actionable mixing technique.*
 
 ## Variant Groups
 
@@ -144,3 +190,25 @@ Once you have your research JSON, tell the user:
 > Here's the plugin data for [plugin names]. Give this to Claude Code to add to plugin-library.html.
 
 Claude Code will update existing plugins or add new ones as needed.
+
+## Quality Review Process
+
+When you provide research to Claude Code, it can run a **quality review agent** that checks for common issues:
+
+**The review agent checks for:**
+- Marketing language ("comes with", "includes", "access to")
+- Feature counts instead of sonic descriptions
+- Generic use cases that apply to all similar plugins
+- Vague "things to try" without specific settings/techniques
+
+**The agent will:**
+1. Flag any issues found
+2. Suggest specific improvements for each issue
+3. Give an overall assessment: PASS or NEEDS WORK
+
+**Important:** The review is **advisory only**. You (the user) make the final decision:
+- Accept the research as-is (override the review)
+- Request re-research based on feedback
+- Manually edit the JSON
+
+The goal is to maintain high quality while preserving flexibility.
