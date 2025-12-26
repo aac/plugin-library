@@ -49,8 +49,16 @@ Each plugin object in `PLUGIN_DATA.plugins[]`:
 
 ## Adding Plugin Data
 
-When you receive plugin JSON from Claude Web, upsert it into `PLUGIN_DATA.plugins`:
+When you receive plugin JSON from Claude Web:
 
+**Step 1: Automatic Quality Review**
+- Run the research through a review agent (using Task tool)
+- Agent checks for marketing language, vague use cases, generic "things to try"
+- Present findings with specific improvement suggestions
+- Ask user: Accept as-is, request re-research, or manually edit?
+
+**Step 2: Incorporate Data**
+Once approved, upsert into `PLUGIN_DATA.plugins`:
 - **If plugin exists** (matching `id`): Update fields, but preserve `manualRead`
 - **If plugin is new**: Add the complete object to the array
 
